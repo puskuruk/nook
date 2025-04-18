@@ -10,6 +10,9 @@ Nook is a lightweight online collaboration tool inspired by [Around.co](https://
 - System-level mouse event tracking for smooth interactions
 - Native OS integration (opens links in default browser)
 - Modern, minimal UI with hover effects
+- **Sub-second latency streaming** with Cloudflare Stream WebRTC
+- Screen sharing capability
+- GIF sharing during calls
 
 ## Supported OS
 
@@ -28,14 +31,14 @@ This app is built with:
 and uses:
 
 - [Ngrok](https://ngrok.com/) as a reverse proxy for a secure connection
-- [Twilio](https://www.twilio.com/) for video conferencing capabilities
+- [Cloudflare Stream](https://www.cloudflare.com/products/cloudflare-stream/) for low-latency WebRTC streaming
 
 ### Prerequisites
 
 - Node.js (v18 or higher recommended)
 - npm
 - Make and Clang (for building the native mouse tracking module)
-- A twilio account -> create an api key
+- A Cloudflare account with Stream enabled
 - A ngrok account -> follow the easy setup instructions
 
 ### Setup
@@ -55,22 +58,35 @@ npm install
 
 This will also automatically build the native mouse tracking module.
 
-3. Start the token server for twilio:
+3. Create a `.env` file based on `.env.example` and add your Cloudflare credentials:
 
-```bash
-npm run start-token-server
+```
+CLOUDFLARE_API_TOKEN=your_api_token
+CLOUDFLARE_ACCOUNT_ID=your_account_id
 ```
 
-4. Start ngrok reverse proxy tunnel with your credentials installed from the instructions:
+4. Start the server:
+
+```bash
+npm run start-server
+```
+
+5. Start ngrok reverse proxy tunnel with your credentials installed from the instructions:
 
 ```bash
 ngrok http --url=<your-unique-id>.ngrok-free.app 3000 
 ```
 
-5. Start the development server:
+6. Start the development server:
 
 ```bash
 npm start
+```
+
+Or run both the server and app together:
+
+```bash
+npm run dev
 ```
 
 ### Building
@@ -88,6 +104,30 @@ npm run make
 - `src/renderer.js`: Electron renderer process
 - `src/App.vue`: Main Vue component
 - `src/preload.js`: Electron preload script for IPC
+- `src/components/stream/`: WebRTC streaming components for Cloudflare Stream
+- `src/api/`: Server API for stream management
+
+## Cloudflare Stream Integration
+
+This application uses Cloudflare Stream for WebRTC-based low-latency streaming:
+
+- **WHIP Protocol** (WebRTC-HTTP Ingestion Protocol) - For publishing streams
+- **WHEP Protocol** (WebRTC-HTTP Egress Protocol) - For viewing streams
+
+The implementation supports:
+- Sub-second latency
+- Unlimited concurrent viewers
+- Screen sharing
+- Mobile compatibility via WebViews
+
+## API Endpoints
+
+The server provides the following REST endpoints:
+
+- `GET /health`: Health check endpoint
+- `POST /stream`: Create a new streaming room
+- `GET /stream/:roomName`: Get details for an existing room
+- `DELETE /stream/:roomName`: Delete a streaming room
 
 ## Contributing
 
